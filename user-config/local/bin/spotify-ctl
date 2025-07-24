@@ -1,0 +1,33 @@
+#!/bin/sh
+
+spotify_send() {
+	dbus-send \
+	  --session \
+	  --type=method_call \
+	  --print-reply \
+	  --dest=org.mpris.MediaPlayer2.spotify \
+	  /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.${1:?No action}
+}
+
+case ${1:-} in
+	PlayPause|Play|playpause|play)
+		spotify_send PlayPause
+		;;
+	Pause|pause)
+		spotify_send Pause
+		;;
+	Next|next)
+		spotify_send Next
+		;;
+	Previous|Prev|previous|prev)
+		spotify_send Previous
+		;;
+	*)
+		echo "Usage: $0 ACTION"
+		echo "  ACTION:"
+		echo "    playpause    Toggles play/pause"
+		echo "    pause        Puases"
+		echo "    next         Next song"
+		echo "    previous     Privious song"
+		;;
+esac

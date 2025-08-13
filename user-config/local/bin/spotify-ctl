@@ -1,12 +1,21 @@
 #!/bin/sh
 
 spotify_send() {
+	cmd=${1:?No action}
+	shift
 	dbus-send \
 	  --session \
 	  --type=method_call \
 	  --print-reply \
 	  --dest=org.mpris.MediaPlayer2.spotify \
-	  /org/mpris/MediaPlayer2 org.mpris.MediaPlayer2.Player.${1:?No action}
+	  /org/mpris/MediaPlayer2 "org.mpris.MediaPlayer2.Player.$cmd" "$@"
+}
+
+get_id() {
+	# Likely on the form 'https://open.spotify.com/<category>/<id>?...' we want <category> and <id>
+	URL="$1"
+
+	echo "$URL" | sed -nr 's|.*open.spotify.com/([^/]+)/([^?]+).*|\1:\2|p'
 }
 
 case ${1:-} in
@@ -22,12 +31,28 @@ case ${1:-} in
 	Previous|Prev|previous|prev)
 		spotify_send Previous
 		;;
+	Open|OpenUri|open|openuri)
+		open_id=$(get_id "${2:-}")
+		if [ -z "$open_id" ]; then
+			echo "Missing or incompatible URI: '$2'" >&2
+			exit 1
+		fi
+		spotify_send OpenUri "string:spotify:$open_id"
+		;;
 	*)
-		echo "Usage: $0 ACTION"
-		echo "  ACTION:"
-		echo "    playpause    Toggles play/pause"
-		echo "    pause        Puases"
-		echo "    next         Next song"
-		echo "    previous     Privious song"
+		cat <<-EOF
+			Usage: $0 ACTION
+			  ACTION:
+			    playpause    Toggles play/pause
+			    pause        Puases
+			    next         Next song
+			    previous     Previous song
+			    open <URL>   Opens a spotify URL
+
+			  URL:
+			    This is expected to be on the following form:
+			    (https://)open.spotify.com/<category>/<id>(?...)
+			    Prantheses marks optional stuff.
+EOF
 		;;
 esac

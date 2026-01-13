@@ -1,7 +1,13 @@
 #!/bin/sh
 
-bat=$(cat /sys/class/power_supply/BAT0/capacity)
-status=$(cat /sys/class/power_supply/BAT0/status)
+bat_path='/sys/class/power_supply/BAT0'
+
+if ! [ -d "$bat" ]; then
+	exit
+fi
+
+bat=$(cat "$bat_path/capacity")
+status=$(cat "$bat_path/status")
 
 case "$status" in
 	Full|Charging) echo " $bat%"; exit;;

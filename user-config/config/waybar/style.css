@@ -1,0 +1,6 @@
+@import "/etc/xdg/waybar/style.css";
+
+#battery.full {
+    color: #ffffff;
+    background-color: #26A65B;
+}
